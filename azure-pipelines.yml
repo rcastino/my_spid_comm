@@ -127,15 +127,21 @@ stages:
     pool:
       vmImage: 'windows-2019'
     dependsOn: []
-
-    
+    condition: 
+      and(
+        succeeded(),
+        and (
+          eq(variables['ENABLE_MANUAL_DEPLOY'], true),
+          eq(variables['Build.Reason'], 'Manual')
+        )
+      )
     jobs:
       - job: publish_package
         steps:
             # You only need to install dev dependencies to run release-it tool
           - template: azure-templates/make-build-steps.yml
             parameters:
-              make: install_dependencies
+              make: build
 
 
             # The NPM auth token must be set in a local .pmrc file
