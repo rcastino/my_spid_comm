@@ -1,6 +1,6 @@
 {
   "name": "@rcastino/my_sp_comm",
-  "version": "3.2.0",
+  "version": "3.2.1",
   "description": "Common code for integrating SP test",
   "repository": {
     "type": "git",
@@ -83,7 +83,7 @@
   "resolutions": {
     "fp-ts": "1.17.0"
   },
-  "homepage": "https://github.com/rcastino/my_spid_comm#readme", 
+  "homepage": "https://github.com/rcastino/my_spid_comm#readme",
   "keywords": [
     "spid"
   ],
