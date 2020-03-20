@@ -146,12 +146,7 @@ stages:
 
           # The NPM auth token must be set in a local .pmrc file
           - bash: |
-              echo "@$GITHUB_ORG_NAME:registry=https://npm.pkg.github.com/"
-              echo "Build.Repository.Name: $REPO"
-
-              
               echo "@$GITHUB_ORG_NAME:registry=https://npm.pkg.github.com/" >> .npmrc
-              echo \//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN >> .npmrc
             env:
               GITHUB_TOKEN: '$(GITHUB_TOKEN)'
               GITHUB_ORG_NAME: '$(GITHUB_ORG_NAME)'
