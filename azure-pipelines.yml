@@ -35,6 +35,7 @@
 variables:
   NODE_VERSION: '10.14.1'
   YARN_CACHE_FOLDER: $(Pipeline.Workspace)/.yarn
+  GITHUB_ORG_NAME: 'rcastino'
 
 # This pipeline can be manually run or is automatically triggered whenever one 
 # of the following conditions is true:
@@ -138,24 +139,26 @@ stages:
     jobs:
       - job: publish_package
         steps:
-            # You only need to install dev dependencies to run release-it tool
+          # You need to build code (also to install the dev dependencies)
           - template: azure-templates/make-build-steps.yml
             parameters:
               make: build
 
-
-            # The NPM auth token must be set in a local .pmrc file
+          # The NPM auth token must be set in a local .pmrc file
           - bash: |
-              echo "@rcastino:registry=https://npm.pkg.github.com/" >> .npmrc
+              echo "@$GITHUB_ORG_NAME:registry=https://npm.pkg.github.com/"
+
+              
+              echo "@$GITHUB_ORG_NAME:registry=https://npm.pkg.github.com/" >> .npmrc
               echo \//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN >> .npmrc
             env:
               GITHUB_TOKEN: '$(GITHUB_TOKEN)'
+              GITHUB_ORG_NAME: '$(GITHUB_ORG_NAME)'
             displayName: 'Init .npmrc file'
-              
 
-            # Environment variable "GITHUB_TOKEN" is required for creating GitHub release.
-            # Note. The git commands are run only to set the appropriate missing configurations
-            # (e.g. HEAD detached, upstream branch not set, username and email missing, etc.)! 
+          # Environment variable "GITHUB_TOKEN" is required for creating GitHub release.
+          # Note. The git commands are run only to set the appropriate missing configurations
+          # (e.g. HEAD detached, upstream branch not set, username and email missing, etc.)! 
           - bash: |
               git checkout $GIT_SOURCE_BRANCH_NAME
               git checkout -B $GIT_SOURCE_BRANCH_NAME $GIT_SOURCE_COMMIT
