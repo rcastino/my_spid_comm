@@ -20,10 +20,11 @@
 # To publish the package to the GitHub Package registry and create the corresponding 
 # release and tag you need to use the GitHub credentials of a user that is a 
 # collaborator for the repository "pagopa/io-spid-commons" in the GitHub service  
-# connection and also set the following variable with an access token with scope 
-# "public_repo" for the same user or another one that is a collaborator.
+# connection. 
+# You also need to set the following variable with an access token with scope 
+# "public_repo" and "write:packages" for the same user (or another one that is a 
+# collaborator).
 # - GITHUB_TOKEN
-
 #
 # WARNING. Only the following values are allowed when selecting parameters to manually 
 # run the pipeline using Azure DevOps UI:
@@ -57,7 +58,6 @@ pool:
 stages:
   # A) Build and code validation (always run)
   - stage: Build
-    condition: false
     dependsOn: []
     jobs:
       # A1) Checkout, install module and build code (use Windows OS)
@@ -100,7 +100,6 @@ stages:
 
   # B) Run unit tests (use Linux OS, also required to generate certificates)
   - stage: Test
-    condition: false
     dependsOn: []
     jobs:
       - job: unit_tests
@@ -127,7 +126,6 @@ stages:
   - stage: Deploy_production
     pool:
       vmImage: 'windows-2019'
-    dependsOn: []
     condition: 
       and(
         succeeded(),
@@ -136,6 +134,9 @@ stages:
           eq(variables['Build.Reason'], 'Manual')
         )
       )
+    dependsOn:
+      - Build
+      - Test
     jobs:
       - job: publish_package
         steps:
@@ -144,14 +145,13 @@ stages:
             parameters:
               make: build
 
-          # The NPM auth token must be set in a local .pmrc file
+          # The GitHub Package registry with access token must be set in a local .pmrc file
           - bash: |
               echo "@$GITHUB_ORG_NAME:registry=https://npm.pkg.github.com/" >> .npmrc
               echo \//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN >> .npmrc
             env:
               GITHUB_TOKEN: '$(GITHUB_TOKEN)'
               GITHUB_ORG_NAME: '$(GITHUB_ORG_NAME)'
-              REPO: '$(Build.Repository.Name)'
             displayName: 'Init .npmrc file'
 
           # Environment variable "GITHUB_TOKEN" is required for creating GitHub release.
