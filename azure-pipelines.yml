@@ -56,6 +56,7 @@ pool:
 stages:
   # A) Build and code validation (always run)
   - stage: Build
+    condition: false
     dependsOn: []
     jobs:
       # A1) Checkout, install module and build code (use Windows OS)
@@ -98,6 +99,7 @@ stages:
 
   # B) Run unit tests (use Linux OS, also required to generate certificates)
   - stage: Test
+    condition: false
     dependsOn: []
     jobs:
       - job: unit_tests
@@ -124,17 +126,7 @@ stages:
   - stage: Deploy_production
     pool:
       vmImage: 'windows-2019'
-    condition: 
-      and(
-        succeeded(),
-        and (
-          eq(variables['ENABLE_MANUAL_DEPLOY'], true),
-          eq(variables['Build.Reason'], 'Manual')
-        )
-      )
-    dependsOn:
-      - Build
-      - Test
+
     jobs:
       - job: publish_package
         steps:
@@ -142,7 +134,17 @@ stages:
           - template: azure-templates/make-build-steps.yml
             parameters:
               make: install_dependencies
-                      
+
+
+            # The NPM auth token must be set in a local .pmrc file
+          - bash: |
+              echo "@rcastino:registry=https://npm.pkg.github.com/" >> .npmrc
+              echo \//npm.pkg.github.com/:_authToken=$GITHUB_TOKEN >> .npmrc
+            env:
+              GITHUB_TOKEN: '$(GITHUB_TOKEN)'
+            displayName: 'Init .npmrc file'
+              
+
             # Environment variable "GITHUB_TOKEN" is required for creating GitHub release.
             # Note. The git commands are run only to set the appropriate missing configurations
             # (e.g. HEAD detached, upstream branch not set, username and email missing, etc.)! 
