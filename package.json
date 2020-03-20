@@ -1,6 +1,6 @@
 {
   "name": "@rcastino/my_sp_comm",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "description": "Common code for integrating SP test",
   "repository": {
     "type": "git",
